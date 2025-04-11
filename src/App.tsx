@@ -1,5 +1,5 @@
-import { Search, Plus, ArrowRight, Trash2, Check, Info, AlertCircle, HelpCircle, Copy, Settings, User, LogOut, UserPlus, Mail, MoreHorizontal, Pencil, Clipboard, CreditCard, Calendar, Building, Users, FileText, BookOpen, MessageSquare, Eye, Globe, Bell, Send, Save, Square } from "lucide-react";
-import { Button, Tooltip, Menu, Checkbox } from "../lib/main";
+import { Search, Plus, ArrowRight, Trash2, Check, Info, AlertCircle, HelpCircle, Copy, Settings, User, LogOut, UserPlus, Mail, MoreHorizontal, Pencil, Clipboard, CreditCard, Calendar, Building, Users, FileText, BookOpen, MessageSquare, Eye, Globe, Bell, Send, Save, Square, ChevronDown } from "lucide-react";
+import { Button, Tooltip, Menu, Checkbox, Dropdown } from "../lib/main";
 import { useState } from "react";
 
 const App = () => {
@@ -635,6 +635,146 @@ const App = () => {
       <h2 className="text-2xl font-semibold mt-8">Select Component (Coming Soon)</h2>
       <div className="bg-gray-100 p-4 rounded-md w-80 text-center">
         <p>Select component will be rebuilt from scratch</p>
+      </div>
+
+      {/* Dropdown Examples */}
+      <h2 className="text-2xl font-semibold mt-8">Dropdown Examples</h2>
+      
+      {/* Basic dropdown examples */}
+      <div className="flex gap-8 items-center justify-center">
+        <Dropdown 
+          label="Basic Dropdown"
+          items={[
+            { content: 'Edit', icon: Pencil, onSelect: () => console.log('Edit') },
+            { content: 'Duplicate', icon: Copy, onSelect: () => console.log('Duplicate') },
+            { content: 'Delete', icon: Trash2, onSelect: () => console.log('Delete'), disabled: true }
+          ]}
+        />
+
+        <Dropdown 
+          label="Primary Style"
+          buttonType="primary"
+          items={[
+            { content: 'Edit', icon: Pencil, onSelect: () => console.log('Edit') },
+            { content: 'Duplicate', icon: Copy, onSelect: () => console.log('Duplicate') },
+            { content: 'Delete', icon: Trash2, onSelect: () => console.log('Delete'), disabled: true }
+          ]}
+        />
+      </div>
+
+      {/* Dropdown with icon */}
+      <div className="flex gap-8 items-center justify-center mt-4">
+        <Dropdown 
+          label="Settings"
+          icon={Settings}
+          items={[
+            { content: 'Profile', icon: User, onSelect: () => console.log('Profile') },
+            { content: 'Preferences', icon: Settings, onSelect: () => console.log('Preferences') },
+            { isSeparator: true },
+            { content: 'Log out', icon: LogOut, onSelect: () => console.log('Log out') }
+          ]}
+        />
+        
+        <Dropdown 
+          label="User"
+          icon={User}
+          buttonType="primary"
+          items={[
+            { content: 'Profile', icon: User, onSelect: () => console.log('Profile') },
+            { content: 'Settings', icon: Settings, onSelect: () => console.log('Settings') },
+            { isSeparator: true },
+            { content: 'Log out', icon: LogOut, onSelect: () => console.log('Log out') }
+          ]}
+        />
+      </div>
+
+      {/* Dropdown sizes */}
+      <div className="flex gap-8 items-center justify-center mt-4">
+        <Dropdown 
+          label="Small"
+          size="sm"
+          items={[
+            { content: 'Edit', icon: Pencil, onSelect: () => console.log('Edit') },
+            { content: 'Duplicate', icon: Copy, onSelect: () => console.log('Duplicate') },
+            { content: 'Delete', icon: Trash2, onSelect: () => console.log('Delete') }
+          ]}
+        />
+        
+        <Dropdown 
+          label="Medium"
+          size="md"
+          items={[
+            { content: 'Edit', icon: Pencil, onSelect: () => console.log('Edit') },
+            { content: 'Duplicate', icon: Copy, onSelect: () => console.log('Duplicate') },
+            { content: 'Delete', icon: Trash2, onSelect: () => console.log('Delete') }
+          ]}
+        />
+        
+        <Dropdown 
+          label="Large"
+          size="lg"
+          items={[
+            { content: 'Edit', icon: Pencil, onSelect: () => console.log('Edit') },
+            { content: 'Duplicate', icon: Copy, onSelect: () => console.log('Duplicate') },
+            { content: 'Delete', icon: Trash2, onSelect: () => console.log('Delete') }
+          ]}
+        />
+      </div>
+
+      {/* Dropdown with search */}
+      <div className="flex gap-8 items-center justify-center mt-4">
+        <Dropdown 
+          label="Searchable Dropdown"
+          items={[
+            { content: 'Profile', icon: User, onSelect: () => console.log('Profile') },
+            { content: 'Settings', icon: Settings, onSelect: () => console.log('Settings') },
+            { content: 'Billing', icon: CreditCard, onSelect: () => console.log('Billing') },
+            { content: 'Subscription', icon: Calendar, onSelect: () => console.log('Subscription') },
+            { isSeparator: true },
+            { content: 'Documentation', icon: FileText, onSelect: () => console.log('Documentation') },
+            { content: 'Help Center', icon: HelpCircle, onSelect: () => console.log('Help Center') },
+            { isSeparator: true },
+            { content: 'Log out', icon: LogOut, onSelect: () => console.log('Log out') }
+          ]}
+          search={{
+            enabled: true,
+            placeholder: "Search options..."
+          }}
+        />
+      </div>
+
+      {/* Dropdown with multi-select */}
+      <div className="flex gap-8 items-center justify-center mt-4">
+        <Dropdown 
+          label={`Selected: ${selectedNotifications.length}`}
+          items={[
+            { content: 'Notification Settings', isLabel: true },
+            { content: 'Push Notifications', isCheckbox: true, isCheckboxListItem: true, value: 'push', icon: Bell },
+            { content: 'Email Notifications', isCheckbox: true, isCheckboxListItem: true, value: 'email', icon: Mail },
+            { content: 'SMS Notifications', isCheckbox: true, isCheckboxListItem: true, value: 'sms', icon: Send },
+            { content: 'Desktop Notifications', isCheckbox: true, isCheckboxListItem: true, value: 'desktop', icon: Globe }
+          ]}
+          multiSelect={{
+            enabled: true,
+            selectedValues: selectedNotifications,
+            onSelectionChange: (values) => {
+              setSelectedNotifications(values);
+              console.log('Selected notification settings:', values);
+            }
+          }}
+        />
+      </div>
+
+      {/* Disabled dropdown */}
+      <div className="flex gap-8 items-center justify-center mt-4">
+        <Dropdown 
+          label="Disabled Dropdown"
+          disabled={true}
+          items={[
+            { content: 'Edit', icon: Pencil, onSelect: () => console.log('Edit') },
+            { content: 'Delete', icon: Trash2, onSelect: () => console.log('Delete') }
+          ]}
+        />
       </div>
 
     </div>

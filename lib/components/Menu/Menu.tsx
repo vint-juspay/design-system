@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { Check } from 'lucide-react';
-import { MenuProps, MenuItemWithSeparatorProps, MenuStandardProps } from './types';
+import { MenuProps, MenuItemWithSeparatorProps, MenuStandardProps, MenuCheckboxProps } from './types';
 import { 
   getMenuClassNames, 
   getMenuItemClassNames, 
@@ -84,7 +84,13 @@ const Menu = React.forwardRef<
   };
 
   // Handle multi-select checkbox changes
-  const handleCheckboxListChange = (value: string, checked: boolean) => {
+  const handleCheckboxListChange = (value: string, checked: boolean, event?: React.MouseEvent) => {
+    // Prevent the dropdown from closing when checkbox items are clicked
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
     const newValues = checked 
       ? [...selectedValues, value]
       : selectedValues.filter(v => v !== value);
@@ -93,6 +99,17 @@ const Menu = React.forwardRef<
     
     if (multiSelect?.onSelectionChange) {
       multiSelect.onSelectionChange(newValues);
+    }
+  };
+
+  // Handle dropdown state changes
+  const handleOpenChange = (open: boolean) => {
+    // Only update the state if it's different from the current state
+    if (open !== isOpen) {
+      setIsOpen(open);
+      if (rootProps?.onOpenChange) {
+        rootProps.onOpenChange(open);
+      }
     }
   };
 
@@ -110,28 +127,69 @@ const Menu = React.forwardRef<
       );
     }
 
+    // Handle standard item with onSelect (not a checkbox)
+    if ('onSelect' in item && 
+        !('isCheckbox' in item) && 
+        !('isCheckboxListItem' in item)) {
+      // Standard menu item with onSelect (should close menu)
+      return (
+        <DropdownMenu.Item
+          key={`item-${index}`}
+          onSelect={item.onSelect}
+          disabled={'disabled' in item ? item.disabled : false}
+          className={cn(
+            getMenuItemClassNames('disabled' in item ? item.disabled : false), 
+            getColorClassNames('color' in item ? item.color : undefined)
+          )}
+        >
+          <div className={getThreeColumnLayoutClassNames()}>
+            {'icon' in item && item.icon && <item.icon className={getIconClassNames()} />}
+            <div className={getColumnContentClassNames()}>
+              {'subtext' in item && item.subtext ? (
+                <div className={getFlexColumnClassNames()}>
+                  <div>{item.content}</div>
+                  <div className={getSubtextClassNames()}>{item.subtext}</div>
+                </div>
+              ) : (
+                item.content
+              )}
+            </div>
+            {'shortcut' in item && item.shortcut && (
+              <div className={getShortcutClassNames()}>{item.shortcut}</div>
+            )}
+          </div>
+        </DropdownMenu.Item>
+      );
+    }
+
     if ('isCheckbox' in item && item.isCheckbox) {
-      if (item.isCheckboxListItem && item.value && multiSelect?.enabled) {
+      if ('isCheckboxListItem' in item && item.isCheckboxListItem && 'value' in item && item.value && multiSelect?.enabled) {
         const isChecked = selectedValues.includes(item.value);
         return (
-          <DropdownMenu.CheckboxItem
+          <DropdownMenu.Item
             key={`checkbox-list-${index}`}
-            checked={isChecked}
-            onCheckedChange={(checked) => handleCheckboxListChange(item.value!, checked)}
-            disabled={item.disabled}
+            disabled={'disabled' in item ? item.disabled : false}
             className={getCheckClassNames()}
+            // This prevents the menu from closing when a checkbox is clicked
+            onSelect={(event) => {
+              event.preventDefault();
+              handleCheckboxListChange(item.value!, !isChecked, event as any);
+            }}
           >
             {checkboxPosition === 'left' ? (
               <div className={themeConfig.euler.menu.layout.container}>
                 <Checkbox 
                   checked={isChecked}
-                  disabled={item.disabled}
+                  disabled={'disabled' in item ? item.disabled : false}
                   size="sm"
                   position="left"
-                  onCheckedChange={() => {}}
+                  onCheckedChange={(checked) => {
+                    handleCheckboxListChange(item.value!, !!checked);
+                  }}
+                  className={themeConfig.euler.menu.layout.checkboxLeft}
                 >
                   <div className={themeConfig.euler.menu.layout.content}>
-                    {item.icon && <item.icon className={getIconClassNames()} />}
+                    {'icon' in item && item.icon && <item.icon className={getIconClassNames()} />}
                     {item.content}
                   </div>
                 </Checkbox>
@@ -139,54 +197,57 @@ const Menu = React.forwardRef<
             ) : (
               <div className={themeConfig.euler.menu.layout.container}>
                 <div className={themeConfig.euler.menu.layout.content}>
-                  {item.icon && <item.icon className={getIconClassNames()} />}
+                  {'icon' in item && item.icon && <item.icon className={getIconClassNames()} />}
                   {item.content}
                 </div>
                 <Checkbox 
                   checked={isChecked}
-                  disabled={item.disabled}
+                  disabled={'disabled' in item ? item.disabled : false}
                   size="sm"
-                  onCheckedChange={() => {}}
+                  onCheckedChange={(checked) => {
+                    handleCheckboxListChange(item.value!, !!checked);
+                  }}
                   className={themeConfig.euler.menu.layout.checkboxRight}
                 />
               </div>
             )}
-          </DropdownMenu.CheckboxItem>
+          </DropdownMenu.Item>
         );
       }
       
+      const checkboxItem = item as MenuCheckboxProps;
       return (
         <DropdownMenu.CheckboxItem
           key={`checkbox-${index}`}
-          checked={item.checked}
-          onCheckedChange={item.onSelect as unknown as (checked: boolean) => void}
-          disabled={item.disabled}
+          checked={checkboxItem.checked}
+          onCheckedChange={checkboxItem.onSelect as unknown as (checked: boolean) => void}
+          disabled={'disabled' in checkboxItem ? checkboxItem.disabled : false}
           className={getCheckClassNames()}
         >
           {checkboxPosition === 'left' ? (
             <div className={themeConfig.euler.menu.layout.container}>
               <Checkbox 
-                checked={item.checked}
-                disabled={item.disabled}
+                checked={checkboxItem.checked}
+                disabled={'disabled' in checkboxItem ? checkboxItem.disabled : false}
                 size="sm"
                 position="left"
                 onCheckedChange={() => {}}
               >
                 <div className={themeConfig.euler.menu.layout.content}>
-                  {item.icon && <item.icon className={getIconClassNames()} />}
-                  {item.content}
+                  {'icon' in checkboxItem && checkboxItem.icon && <checkboxItem.icon className={getIconClassNames()} />}
+                  {checkboxItem.content}
                 </div>
               </Checkbox>
             </div>
           ) : (
             <div className={themeConfig.euler.menu.layout.container}>
               <div className={themeConfig.euler.menu.layout.content}>
-                {item.icon && <item.icon className={getIconClassNames()} />}
-                {item.content}
+                {'icon' in checkboxItem && checkboxItem.icon && <checkboxItem.icon className={getIconClassNames()} />}
+                {checkboxItem.content}
               </div>
               <Checkbox 
-                checked={item.checked}
-                disabled={item.disabled}
+                checked={checkboxItem.checked}
+                disabled={'disabled' in checkboxItem ? checkboxItem.disabled : false}
                 size="sm"
                 onCheckedChange={() => {}}
                 className={themeConfig.euler.menu.layout.checkboxRight}
@@ -202,13 +263,13 @@ const Menu = React.forwardRef<
         <DropdownMenu.RadioItem
           key={`radio-${index}`}
           value={item.value}
-          disabled={item.disabled}
+          disabled={'disabled' in item ? item.disabled : false}
           className={getCheckClassNames()}
         >
           <DropdownMenu.ItemIndicator className={themeConfig.euler.menu.checkbox.indicator}>
             <Check className={themeConfig.euler.menu.checkbox.icon} />
           </DropdownMenu.ItemIndicator>
-          {item.icon && <item.icon className={getIconClassNames()} />}
+          {'icon' in item && item.icon && <item.icon className={getIconClassNames()} />}
           {item.content}
         </DropdownMenu.RadioItem>
       );
@@ -217,8 +278,8 @@ const Menu = React.forwardRef<
     if ('hasSubmenu' in item && item.hasSubmenu && item.submenuItems) {
       return (
         <DropdownMenu.Sub key={`sub-${index}`}>
-          <DropdownMenu.SubTrigger className={getMenuItemClassNames(item.disabled)}>
-            {item.icon && <item.icon className={getIconClassNames()} />}
+          <DropdownMenu.SubTrigger className={getMenuItemClassNames('disabled' in item ? item.disabled : false)}>
+            {'icon' in item && item.icon && <item.icon className={getIconClassNames()} />}
             {item.content}
           </DropdownMenu.SubTrigger>
           <DropdownMenu.Portal>
@@ -238,19 +299,19 @@ const Menu = React.forwardRef<
       <DropdownMenu.Item
         key={`item-${index}`}
         onSelect={standardItem.onSelect}
-        disabled={standardItem.disabled}
+        disabled={'disabled' in standardItem ? standardItem.disabled : false}
         className={cn(
-          getMenuItemClassNames(standardItem.disabled), 
+          getMenuItemClassNames('disabled' in standardItem ? standardItem.disabled : false), 
           getColorClassNames(standardItem.color)
         )}
       >
         <div className={getThreeColumnLayoutClassNames()}>
           {/* Column 1: Icon */}
-          {standardItem.icon && <standardItem.icon className={getIconClassNames()} />}
+          {'icon' in standardItem && standardItem.icon && <standardItem.icon className={getIconClassNames()} />}
           
           {/* Column 2: Content (main text + subtext) */}
           <div className={getColumnContentClassNames()}>
-            {standardItem.subtext ? (
+            {'subtext' in standardItem && standardItem.subtext ? (
               <div className={getFlexColumnClassNames()}>
                 <div>{standardItem.content}</div>
                 <div className={getSubtextClassNames()}>{standardItem.subtext}</div>
@@ -261,7 +322,7 @@ const Menu = React.forwardRef<
           </div>
           
           {/* Column 3: Shortcut */}
-          {standardItem.shortcut && (
+          {'shortcut' in standardItem && standardItem.shortcut && (
             <div className={getShortcutClassNames()}>{standardItem.shortcut}</div>
           )}
         </div>
@@ -272,7 +333,8 @@ const Menu = React.forwardRef<
   return (
     <DropdownMenu.Root 
       {...rootProps} 
-      onOpenChange={setIsOpen}
+      open={isOpen}
+      onOpenChange={handleOpenChange}
     >
       <DropdownMenu.Trigger asChild>
         {children}
