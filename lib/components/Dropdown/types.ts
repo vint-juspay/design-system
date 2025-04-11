@@ -1,5 +1,5 @@
 import { ButtonProps } from '../Button/types';
-import { MenuProps, MenuItemWithSeparatorProps } from '../Menu/types';
+import { MenuProps } from '../Menu/types';
 import { ReactNode } from 'react';
 
 /**
