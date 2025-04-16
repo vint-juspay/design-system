@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Search, Plus, ArrowRight, Trash2, Check, Info, AlertCircle, HelpCircle, Layers, Tag as TagIcon, Settings, User, Lock, Home } from "lucide-react";
-import { Button, Tag, SplitTag, Tooltip, Tabs, TabsList, TabsTrigger, TabsContent } from "../lib/main";
+import { Button, Tag, SplitTag, TextInput, Tooltip, Tabs, TabsList, TabsTrigger, TabsContent } from "../lib/main";
 import { Snackbar } from "../lib/components/Snackbar";
 
 const App = () => {
-  const [activeComponent, setActiveComponent] = useState<'buttons' | 'tooltips' | 'tags' | 'tabs'>('buttons');
+  const [activeComponent, setActiveComponent] = useState<'buttons' | 'tooltips' | 'tags' | 'tabs' | 'textInput'>('buttons');
 
   const renderNavbar = () => (
     <div className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm">
@@ -55,6 +55,18 @@ const App = () => {
                 <Settings className="mr-2 h-5 w-5" />
                 Tabs
               </button>
+              <button
+                onClick={() => setActiveComponent('textInput')}
+                className={`${
+                  activeComponent === 'textInput'
+                    ? 'border-blue-500 text-gray-900'
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'  
+                } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+              >
+                <Search className="mr-2 h-5 w-5" />
+                Input Field
+              </button>
+              
             </div>
           </div>
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
@@ -615,6 +627,20 @@ const App = () => {
     </>
   );
 
+  const renderTextInput = () => (
+    <>
+      <h2 className="text-2xl font-semibold">Input Field Examples</h2>
+
+
+      <div className="gap-4 mt-12 align-top">
+        <TextInput label="Search" size="md" mandatory/>
+        <TextInput label="Search" size="lg" rightSlot={<ArrowRight className="text-gray-400 w-4 h-4" />} />
+        <TextInput label="Search" state="error" size="lg" rightSlot={<ArrowRight className="text-gray-400 w-4 h-4" />} />
+        <TextInput label="Search" state="filled" value="test@test.com" size="lg" rightSlot={<ArrowRight className="text-gray-400 w-4 h-4" />} infoTooltip="Additional information about this field"/>
+      </div>
+    </>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
       {renderNavbar()}
@@ -624,6 +650,7 @@ const App = () => {
           {activeComponent === 'tooltips' && renderTooltips()}
           {activeComponent === 'tags' && renderTags()}
           {activeComponent === 'tabs' && renderTabs()}
+          {activeComponent === 'textInput' && renderTextInput()}
         </div>
       </div>
     </div>
